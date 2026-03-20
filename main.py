@@ -79,7 +79,6 @@ async def receive_batch(batch:list[Reading]):
 
     db.add_all(readings_to_save)
     db.commit()
-    db.refresh()
     db.close()
     return {
         "message": "Batch saved",
