@@ -66,9 +66,23 @@ async def receive_reading(reading:Reading):
 # [{"value":514, "timestamp":200, "deviceName":"Temp01","units":"celsius"},{"value":514, "timestamp":200, "deviceName":"Temp01","units":"celsius"},{"value":514, "timestamp":200, "deviceName":"Temp01","units":"celsius"}]
 @app.post("/readings/batch")
 async def receive_batch(batch:list[Reading]):
+    db = SessionLocal()
+    
+    readings_to_save = [ReadingTable(
+        value = r.value,
+        timestamp = r.timestamp,
+        deviceName = r.deviceName,
+        units = r.units
+    ) for r in batch] 
+    # list[Reading] -> list[ReadingTable]
+    # Para poder almacenarlo en SQL
+
+    db.add_all(readings_to_save)
+    db.commit()
+    db.refresh()
+    db.close()
     return {
-        "message": "Batch received",
-        "batch" : batch
+        "message": "Batch saved",
     }
 
 
