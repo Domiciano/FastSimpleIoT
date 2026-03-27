@@ -28,7 +28,7 @@ class Reading(BaseModel):
     value: int
     timestamp: int
     deviceName: str
-    units: str
+    unit: str
 
 
 
@@ -67,12 +67,12 @@ async def receive_reading(reading:Reading):
 @app.post("/readings/batch")
 async def receive_batch(batch:list[Reading]):
     db = SessionLocal()
-    
+    print(batch)
     readings_to_save = [ReadingTable(
         value = r.value,
         timestamp = r.timestamp,
         deviceName = r.deviceName,
-        units = r.units
+        units = r.unit
     ) for r in batch] 
     # list[Reading] -> list[ReadingTable]
     # Para poder almacenarlo en SQL
