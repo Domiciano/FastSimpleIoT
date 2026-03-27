@@ -1,13 +1,12 @@
+import os
 from fastapi import FastAPI
 from pydantic import BaseModel
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import sessionmaker
-
 # Base de datos
-# DATABASE_URL = "postgresql://user:password@localhost/neondb"
-DATABASE_URL = "postgresql://neondb_owner:npg_igQ20oLGnfpB@ep-sparkling-thunder-aim4a2y1-pooler.c-4.us-east-1.aws.neon.tech/neondb"
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://neondb_owner:npg_igQ20oLGnfpB@ep-sparkling-thunder-aim4a2y1-pooler.c-4.us-east-1.aws.neon.tech/neondb")
 engine = create_engine(DATABASE_URL)
 Base = declarative_base()
 SessionLocal = sessionmaker(bind=engine)
@@ -28,7 +27,7 @@ class Reading(BaseModel):
     value: int
     timestamp: int
     deviceName: str
-    unit: str
+    units: str
 
 
 
@@ -58,9 +57,10 @@ async def receive_reading(reading:Reading):
     db.refresh(reading_to_save)
     db.close()
     return {
-        "message": "Reading received",
+        "messageasdasd": "Reading received",
         "value" : reading.value,
         "timestamp" : reading.timestamp,
+        "units" : reading.units,
     }
 # [{},{},{}]
 # [{"value":514, "timestamp":200, "deviceName":"Temp01","units":"celsius"},{"value":514, "timestamp":200, "deviceName":"Temp01","units":"celsius"},{"value":514, "timestamp":200, "deviceName":"Temp01","units":"celsius"}]
@@ -72,7 +72,7 @@ async def receive_batch(batch:list[Reading]):
         value = r.value,
         timestamp = r.timestamp,
         deviceName = r.deviceName,
-        units = r.unit
+        units = r.units
     ) for r in batch] 
     # list[Reading] -> list[ReadingTable]
     # Para poder almacenarlo en SQL
