@@ -6,7 +6,10 @@ from sqlalchemy.orm import declarative_base
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import sessionmaker
 # Base de datos
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://neondb_owner:npg_igQ20oLGnfpB@ep-sparkling-thunder-aim4a2y1-pooler.c-4.us-east-1.aws.neon.tech/neondb")
+DATABASE_URL = os.getenv(
+    "DATABASE_URL", 
+    "postgresql://neondb_owner:npg_igQ20oLGnfpB@ep-sparkling-thunder-aim4a2y1-pooler.c-4.us-east-1.aws.neon.tech/neondb"
+)
 engine = create_engine(DATABASE_URL)
 Base = declarative_base()
 SessionLocal = sessionmaker(bind=engine)

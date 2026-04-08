@@ -58,11 +58,16 @@ pip3 install -r requirements.txt
 
 ## 5. Configurar la base de datos
 
-La app lee la URL de conexión desde una variable de entorno:
+La app lee la URL de conexión desde una variable de entorno. Para que persista
+entre sesiones, agrégala a `~/.bashrc`:
 
 ```bash
-export DATABASE_URL="postgresql://usuario:password@host:5432/nombre_db"
+echo 'export DATABASE_URL="postgresql://usuario:password@host:5432/nombre_db"' >> ~/.bashrc
+source ~/.bashrc
 ```
+
+`~/.bashrc` se ejecuta automáticamente al iniciar cada sesión, por lo que la
+variable estará disponible aunque cierres y vuelvas a conectarte a la instancia.
 
 ---
 
