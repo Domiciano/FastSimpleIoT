@@ -76,12 +76,7 @@ docker network create iot-network
 ## Ejercutar contenedor de DB
 
 ```bash
-docker run -d \
-  --name db \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=postgres \
-  -e POSTGRES_DB=iotdb \
-  postgres:17
+docker run -d --name db -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=iotdb postgres:17
 ```
 
 ## Conectar a red
