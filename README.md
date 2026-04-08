@@ -22,7 +22,7 @@ DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost/n
 
 - Docker Desktop instalado y corriendo
 
----
+
 
 ## 1. Dockerfile
 
@@ -52,7 +52,7 @@ docker build -t fastapi-iot .
 docker images ls
 ```
 
----
+
 
 ## 3. Build multiplataforma
 Por defecto docker build construye para la arquitectura de tu máquina (ej. arm64 en Apple Silicon). Para publicar una imagen que funcione en amd64 (servidores Linux) y arm64 simultáneamente
@@ -63,7 +63,7 @@ docker buildx build \
   .
 ```
 
----
+
 
 # 4. Red manual entre contenedores
 
@@ -114,7 +114,7 @@ docker exec -it api sh
 ping db
 ```
 
----
+
 
 # 5. Docker Compose
 El archivo docker-compose.yml define dos servicios en la misma red, es una forma resumida de hacer lo de arriba
