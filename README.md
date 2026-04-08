@@ -116,36 +116,115 @@ ping db
 
 
 
-# 5. Docker Compose
-El archivo docker-compose.yml define dos servicios en la misma red, es una forma resumida de hacer lo de arriba
-```mermaid
-graph LR
-    subgraph docker_network
-        api["API"]
-        db["Postgres"]
-    end
 
-    api --> db
+
+## 5. Docker Compose: dos servicios
+
+El archivo `docker-compose.yml` define dos servicios en la misma red:
+
 ```
-El servicio api se conecta a db usando el hostname db — Docker Compose registra cada servicio como hostname en la red interna
+┌─────────────────────────────────────┐
+│          red: docker_default        │
+│                                     │
+│  ┌──────────┐      ┌─────────────┐  │
+│  │   api    │─────▶│     db      │  │
+│  │ :8000    │      │ postgres:17 │  │
+│  └──────────┘      └─────────────┘  │
+└─────────────────────────────────────┘
+```
+
+El servicio `api` se conecta a `db` usando el hostname `db` — Docker Compose registra
+cada servicio como hostname en la red interna:
+
 ```yaml
-version: "3.9"
-
-services:
-  db:
-    image: postgres:17
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: iotdb
-
-  api:
-    build: .
-    ports:
-      - "8000:8000"
-    environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/iotdb
-    depends_on:
-      - db
+environment:
+  - DATABASE_URL=postgresql://postgres:postgres@db:5432/iotdb
+#                                              ^^^
+#                                    hostname del servicio postgres
 ```
-`depends_on` hace que api arranque después de que el contenedor db esté corriendo
+
+`depends_on` hace que `api` arranque después de que el contenedor `db` esté corriendo:
+
+```yaml
+depends_on:
+  - db
+```
+
+### Levantar los servicios
+
+Desde la **raíz del proyecto**:
+
+```bash
+docker compose up --build
+```
+
+`--build` fuerza reconstruir la imagen de `api`. Para correr en background:
+
+```bash
+docker compose up --build -d
+```
+
+Para detener y eliminar los contenedores:
+
+```bash
+docker compose down
+```
+
+---
+
+## 6. Inspeccionar la red
+
+Docker Compose crea automáticamente una red llamada `<carpeta>_default`.
+
+### Listar todas las redes
+
+```bash
+docker network ls
+```
+
+Salida esperada (entre otras):
+
+```
+NETWORK ID     NAME             DRIVER    SCOPE
+83d8498846d8   docker_default   bridge    local
+```
+
+### Ver contenedores conectados y sus IPs
+
+```bash
+docker network inspect docker_default
+```
+
+En la sección `Containers` verán los dos contenedores con sus IPs asignadas dentro
+de la red interna (ej. `172.18.0.2`, `172.18.0.3`).
+
+### Ver la red de un contenedor específico
+
+```bash
+docker inspect docker-api-1
+```
+
+Buscar `NetworkSettings.Networks` para ver la IP, gateway y redes a las que pertenece.
+
+### Probar conectividad entre contenedores
+
+```bash
+# Entrar al contenedor api
+docker exec -it docker-api-1 sh
+
+# Dentro del contenedor, resolver el hostname "db"
+cat /etc/hosts
+```
+
+---
+
+## 7. Verificar que todo funciona
+
+```bash
+# Health check
+curl http://localhost:8000/
+
+# Guardar una lectura (persiste en PostgreSQL)
+curl -X POST http://localhost:8000/readings \
+  -H "Content-Type: application/json" \
+  -d '{"value":100,"timestamp":1234,"deviceName":"Sensor01","unit":"celsius"}'
