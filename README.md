@@ -41,10 +41,10 @@ EXPOSE 8000
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
----
+`--host 0.0.0.0` es obligatorio. Sin esto uvicorn solo escucha dentro del contenedor > y no es accesible desde el host.
 
 ## 2. Construir la imagen
-
+Ejecutar desde la **raíz del proyecto** (donde están Dockerfile y main.py)
 ```bash
 docker build -t fastapi-iot .
 ```
@@ -56,7 +56,7 @@ docker images ls
 ---
 
 ## 3. Build multiplataforma
-
+Por defecto docker build construye para la arquitectura de tu máquina (ej. arm64 en Apple Silicon). Para publicar una imagen que funcione en amd64 (servidores Linux) y arm64 simultáneamente
 ```bash
 docker buildx build \
   --platform linux/amd64,linux/arm64 \
@@ -118,7 +118,7 @@ ping db
 ---
 
 # 5. Docker Compose
-
+El archivo docker-compose.yml define dos servicios en la misma red, es una forma resumida de hacer lo de arriba
 ```mermaid
 graph LR
     subgraph docker_network
@@ -128,7 +128,7 @@ graph LR
 
     api --> db
 ```
-
+El servicio api se conecta a db usando el hostname db — Docker Compose registra cada servicio como hostname en la red interna
 ```yaml
 version: "3.9"
 
@@ -149,3 +149,4 @@ services:
     depends_on:
       - db
 ```
+`depends_on` hace que api arranque después de que el contenedor db esté corriendo
