@@ -1,6 +1,6 @@
 # Dockerizar una API FastAPI
 
-## 0. Cambios necesarios en main.py
+## Cambios necesarios en main.py
 
 Antes de dockerizar, hay dos ajustes que se deben hacer al código.
 
