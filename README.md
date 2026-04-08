@@ -73,7 +73,7 @@ docker buildx build \
 docker network create iot-network
 ```
 
-## Crear DB
+## Ejercutar contenedor de DB
 
 ```bash
 docker run -d \
@@ -84,21 +84,21 @@ docker run -d \
   postgres:17
 ```
 
-## Crear API
+## Conectar a red
+
+```bash
+docker network connect iot-network db
+```
+
+
 
 ```bash
 docker run -d \
   --name api \
   -p 8000:8000 \
+  --network iot-network \
   -e DATABASE_URL=postgresql://postgres:postgres@db:5432/iotdb \
-  fastapi-iot
-```
-
-## Conectar a red
-
-```bash
-docker network connect iot-network db
-docker network connect iot-network api
+  fastapiiot
 ```
 
 ## Verificar
