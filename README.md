@@ -108,12 +108,19 @@ docker network inspect iot-network
 ```
 
 ## Test
-
+Los contenedores vienen limpios, sin toda la paquetería de un sistema operativo. Esto lo vamos a hacer por diversión, vamos a instalar las herramientas de IP al contenedor para poder hacer ping
+```bash
+apt update
+apt install iputils-ping
+```
+Luego entremos al contenedor
 ```bash
 docker exec -it api sh
+```
+Finalmente, hagamos ping
+```bash
 ping db
 ```
-
 
 
 
@@ -216,7 +223,6 @@ docker exec -it docker-api-1 sh
 cat /etc/hosts
 ```
 
----
 
 ## 7. Verificar que todo funciona
 
