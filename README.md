@@ -50,7 +50,7 @@ docker build -t fastapi-iot .
 ```
 
 ```bash
-docker images fastapi-iot
+docker images ls
 ```
 
 ---
