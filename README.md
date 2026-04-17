@@ -231,7 +231,7 @@ Primero asegurese de estar logeado en docker. Puede hacerlo en la versión de es
 ```
 docker login
 ```
-Luego, debe saber su nombre de usuario, para el ejemplo `domic0620`
+Luego, debe saber su nombre de usuario, para el ejemplo `domic0620` y el nombre de la imagen es `api`
 ```
 docker tag api domic0620/integradorapi:0.0.1
 ```
