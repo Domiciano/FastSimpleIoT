@@ -76,12 +76,7 @@ docker network create iot-network
 ## Ejercutar contenedor de DB
 
 ```bash
-docker run -d \
-  --name db \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=postgres \
-  -e POSTGRES_DB=iotdb \
-  postgres:17
+docker run -d --name db -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=iotdb postgres:17
 ```
 
 ## Conectar a red
@@ -93,12 +88,7 @@ docker network connect iot-network db
 
 
 ```bash
-docker run -d \
-  --name api \
-  -p 8000:8000 \
-  --network iot-network \
-  -e DATABASE_URL=postgresql://postgres:postgres@db:5432/iotdb \
-  fastapiiot
+docker run -d --name api -p 8000:8000 --network iot-network -e DATABASE_URL=postgresql://postgres:postgres@db:5432/iotdb fastapiiot
 ```
 
 ## Verificar
@@ -234,3 +224,18 @@ curl http://localhost:8000/
 curl -X POST http://localhost:8000/readings \
   -H "Content-Type: application/json" \
   -d '{"value":100,"timestamp":1234,"deviceName":"Sensor01","unit":"celsius"}'
+```
+
+## 8. Subir a dockerhub
+Primero asegurese de estar logeado en docker. Puede hacerlo en la versión de escritorio gráficamente o mendiante el comando
+```
+docker login
+```
+Luego, debe saber su nombre de usuario, para el ejemplo `domic0620` y el nombre de la imagen es `api`
+```
+docker tag api domic0620/integradorapi:0.0.1
+```
+Y luego lo puede subir al registry DockerHub
+```
+docker push domic0620/integradorapi:0.0.1
+```
