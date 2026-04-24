@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API Backend — Práctica Docker</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f5f4f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 2.5rem 1rem;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      border: 0.5px solid rgba(0,0,0,0.12);
+      padding: 2rem 2.25rem;
+      width: 100%;
+      max-width: 780px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+
+    /* ── Header ── */
+    .header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.75rem;
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #1a1a18;
+      line-height: 1.3;
+    }
+
+    .ports-badge {
+      background: #EEEDFE;
+      border: 0.5px solid #AFA9EC;
+      border-radius: 8px;
+      padding: 8px 14px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .ports-badge .label {
+      font-size: 11px;
+      color: #7F77DD;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+    }
+    .ports-badge .value {
+      font-size: 14px;
+      font-weight: 600;
+      color: #3C3489;
+      font-family: "SF Mono", "Fira Code", monospace;
+    }
+
+    /* ── Checklist table ── */
+    .table-wrap {
+      border: 0.5px solid rgba(0,0,0,0.1);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead tr {
+      background: #f5f4f0;
+    }
+
+    th {
+      font-size: 12px;
+      font-weight: 600;
+      color: #5F5E5A;
+      padding: 10px 12px;
+      text-align: center;
+      border-bottom: 0.5px solid rgba(0,0,0,0.1);
+    }
+    th.task-col { text-align: left; }
+
+    tr:not(:last-child) td {
+      border-bottom: 0.5px solid rgba(0,0,0,0.07);
+    }
+
+    td {
+      padding: 13px 12px;
+      font-size: 13px;
+      color: #2C2C2A;
+      text-align: center;
+      vertical-align: middle;
+    }
+    td.task-col {
+      text-align: left;
+      font-weight: 500;
+      color: #1a1a18;
+    }
+    td.task-col .num {
+      display: inline-block;
+      width: 28px;
+      font-weight: 700;
+      color: #888780;
+      font-size: 12px;
+    }
+    td.task-col .sub {
+      display: block;
+      font-size: 11px;
+      font-weight: 400;
+      color: #888780;
+      margin-top: 2px;
+      margin-left: 28px;
+    }
+
+    tr:nth-child(even) td { background: #fafaf8; }
+    tr:nth-child(odd)  td { background: #ffffff; }
+
+    /* group header badges */
+    .badge-coral  { background:#FAECE7; color:#993C1D; border-radius:6px; padding:4px 10px; font-size:12px; font-weight:600; display:inline-block; }
+    .badge-teal   { background:#E1F5EE; color:#0F6E56; border-radius:6px; padding:4px 10px; font-size:12px; font-weight:600; display:inline-block; }
+    .badge-purple { background:#EEEDFE; color:#3C3489; border-radius:6px; padding:4px 10px; font-size:12px; font-weight:600; display:inline-block; }
+    .badge-amber  { background:#FAEEDA; color:#633806; border-radius:6px; padding:4px 10px; font-size:12px; font-weight:600; display:inline-block; }
+
+    /* status icons */
+    .status {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+    }
+    .done    { background: rgba(29,158,117,0.12); border: 1.2px solid #1D9E75; }
+    .partial { background: rgba(239,159,39,0.15); border: 1.2px solid #EF9F27; }
+    .none    { background: transparent; border: 1.2px solid #D3D1C7; }
+
+    .done svg path    { stroke: #1D9E75; }
+    .partial svg path { stroke: #EF9F27; }
+    .none svg path    { stroke: #B4B2A9; }
+
+    .status.clickable {
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+      user-select: none;
+    }
+    .status.clickable:hover  { transform: scale(1.15); box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+    .status.clickable:active { transform: scale(0.95); }
+
+    /* ── Architecture diagram ── */
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #888780;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    .arch-grid {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+    }
+
+    .arch-node {
+      border-radius: 8px;
+      padding: 8px 14px;
+      text-align: center;
+      border: 0.5px solid;
+      min-width: 72px;
+    }
+    .arch-node .node-title { font-size: 13px; font-weight: 600; }
+    .arch-node .node-sub   { font-size: 10px; margin-top: 1px; font-family: "SF Mono", monospace; }
+
+    .node-gray   { background:#F1EFE8; border-color:#B4B2A9; color:#444441; }
+    .node-gray .node-sub { color:#888780; }
+
+    .node-teal   { background:#E1F5EE; border-color:#5DCAA5; color:#085041; }
+    .node-teal .node-sub { color:#0F6E56; }
+
+    .node-purple { background:#EEEDFE; border-color:#AFA9EC; color:#26215C; }
+    .node-purple .node-sub { color:#534AB7; }
+
+    .node-blue   { background:#E6F1FB; border-color:#85B7EB; color:#042C53; }
+    .node-blue .node-sub { color:#185FA5; }
+
+    .arch-arrow {
+      display: flex;
+      align-items: center;
+      padding: 0 6px;
+      color: #B4B2A9;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .network-box {
+      border: 1.5px dashed #B4B2A9;
+      border-radius: 10px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      position: relative;
+    }
+    .network-label {
+      position: absolute;
+      top: -9px;
+      left: 12px;
+      background: #fff;
+      padding: 0 6px;
+      font-size: 10px;
+      color: #888780;
+      font-weight: 500;
+    }
+
+    /* ── Flow ── */
+    .flow-row {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+    }
+
+    .flow-node {
+      border-radius: 8px;
+      padding: 8px 16px;
+      text-align: center;
+      border: 0.5px solid;
+    }
+    .flow-node .fn-title { font-size: 13px; font-weight: 600; }
+    .flow-node .fn-sub   { font-size: 10px; margin-top: 1px; }
+
+    .node-amber  { background:#FAEEDA; border-color:#FAC775; color:#412402; }
+    .node-amber .fn-sub { color:#854F0B; }
+
+    /* ── Legend ── */
+    .legend {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      padding-top: 1rem;
+      border-top: 0.5px solid rgba(0,0,0,0.08);
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #5F5E5A;
+    }
+
+    @media (max-width: 560px) {
+      .card { padding: 1.25rem 1rem; }
+      h1 { font-size: 16px; }
+      .arch-grid, .flow-row { gap: 4px; }
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+
+ 
+
+  <!-- Checklist table -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th class="task-col">Tarea</th>
+          <th><span class="badge-coral">Bestias</span></th>
+          <th><span class="badge-teal">Chayotes</span></th>
+          <th><span class="badge-purple">Mosqueteras</span></th>
+          <th><span class="badge-amber">Jose</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="task-col"><span class="num">1.</span> Repositorio de GitHub del API</td>
+          <td><span class="status done clickable"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+          <td><span class="status done clickable"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+          <td><span class="status done clickable"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+          <td><span class="status done clickable"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+        </tr>
+        <tr>
+          <td class="task-col"><span class="num">2.</span> Contenerizar el backend — Dockerfile</td>
+          <td><span class="status done clickable"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+          <td><span class="status none clickable"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+          <td><span class="status done clickable"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+          <td><span class="status none clickable"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+        </tr>
+        <tr>
+          <td class="task-col">
+            <span class="num">3.</span> docker-compose.yml con red: api, db
+          </td>
+          <td><span class="status done clickable"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+          <td><span class="status none clickable"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+          <td><span class="status done clickable"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+          <td><span class="status none clickable"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+        </tr>
+        <tr>
+          <td class="task-col">
+            <span class="num">3.5</span> Probar flujo
+            <span class="sub">ESP32 → API container → DB container</span>
+          </td>
+          <td><span class="status partial clickable"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+          <td><span class="status none clickable"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+          <td><span class="status none clickable"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+          <td><span class="status none clickable"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+        </tr>
+        <tr>
+          <td class="task-col"><span class="num">4.</span> Subir imagen del container a DockerHub</td>
+          <td><span class="status done clickable"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+          <td><span class="status none clickable"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+          <td><span class="status none clickable"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+          <td><span class="status none clickable"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Architecture diagram -->
+  <div class="section-label">Arquitectura — red de contenedores</div>
+  <div class="arch-grid">
+    <div class="arch-node node-gray">
+      <div class="node-title">ESP32</div>
+      <div class="node-sub">Hardware</div>
+    </div>
+    <div class="arch-arrow">→</div>
+    <div class="network-box">
+      <div class="network-label">Red de contenedores</div>
+      <div class="arch-node node-teal">
+        <div class="node-title">API</div>
+        <div class="node-sub">:8000</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node node-purple">
+        <div class="node-title">db</div>
+        <div class="node-sub">postgres</div>
+      </div>
+    </div>
+   
+  </div>
+
+  
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-item">
+      <span class="status done" style="width:22px;height:22px;">
+        <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke="#1D9E75" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      Completo
+    </div>
+    <div class="legend-item">
+      <span class="status partial" style="width:22px;height:22px;">
+        <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke="#EF9F27" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      Parcial
+    </div>
+    <div class="legend-item">
+      <span class="status none" style="width:22px;height:22px;"></span>
+      Pendiente
+    </div>
+  </div>
+
+</div>
+<script>
+const STATES = ["none","partial","done"];
+const SVG = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+document.querySelectorAll("tbody .status.clickable").forEach(el => {
+  if (!el.querySelector("svg")) el.innerHTML = SVG;
+  el.addEventListener("click", () => {
+    const cur = STATES.findIndex(s => el.classList.contains(s));
+    const next = STATES[(cur + 1) % STATES.length];
+    el.classList.remove(...STATES);
+    el.classList.add(next);
+    if (!el.querySelector("svg")) el.innerHTML = SVG;
+  });
+});
+</script>
+</body>
+</html>
